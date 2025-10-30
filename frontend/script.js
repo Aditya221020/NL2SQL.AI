@@ -1,6 +1,6 @@
 // Global variables
 // Pick API automatically: use local backend when running on localhost, otherwise use production URL.
-const DEFAULT_PROD_API = "https://your-app-name.onrender.com"; // change to your real prod URL when deployed
+const DEFAULT_PROD_API = "https://nl2sql-ai.onrender.com"; // change to your real prod URL when deployed
 const locHost = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : null;
 const API = (locHost === 'localhost' || locHost === '127.0.0.1' || locHost === '' || locHost === null)
     ? "http://localhost:8000"
@@ -478,4 +478,5 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show landing page by default
     showPage('landingPage');
+
 });
