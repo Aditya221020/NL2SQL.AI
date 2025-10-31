@@ -150,10 +150,21 @@ def execute_sql(sql, db_name, username):
     cursor = conn.cursor()
     try:
         cursor.execute(sql)
-        cols = [desc[0] for desc in cursor.description] if cursor.description else []
-        rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
-        return rows
+
+        # ✅ Commit if the query modifies data
+        if sql.strip().lower().startswith(("insert", "update", "delete", "create", "drop", "alter")):
+            conn.commit()
+
+        # ✅ Return results if it's a SELECT
+        if cursor.description:
+            cols = [desc[0] for desc in cursor.description]
+            rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
+            return rows
+        else:
+            return [{"message": "Query executed successfully"}]
+
     except Exception as e:
         return [{"error": str(e)}]
     finally:
         conn.close()
+
