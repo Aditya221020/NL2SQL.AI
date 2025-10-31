@@ -7,6 +7,7 @@ This script helps you set up and run the NL2SQL.AI application.
 import os
 import sys
 import subprocess
+port = int(os.environ.get("PORT", 8000))
 
 def check_requirements():
     """Check if required packages are installed."""
@@ -63,7 +64,7 @@ def start_server():
             sys.executable, "-m", "uvicorn", 
             "backend.main:app", 
             "--host", "0.0.0.0", 
-            "--port", "8000", 
+            "--port", str(port), 
             "--reload"
         ])
     except KeyboardInterrupt:
@@ -91,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
