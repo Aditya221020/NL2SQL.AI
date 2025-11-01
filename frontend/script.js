@@ -355,6 +355,8 @@ async function sendMessage(message) {
                 
                 resultsHtml += '</table>';
                 addMessage(resultsHtml);
+                document.getElementById("downloadOptions").style.display = "block";
+
             } else {
                 addMessage('<em>No results found</em>');
             }
@@ -478,5 +480,48 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show landing page by default
     showPage('landingPage');
+    // --- Download Results (CSV, Excel, JSON) ---
+async function downloadResult(format) {
+  if (!currentDatabase) {
+    showError("Please select a database first.");
+    return;
+  }
+
+  const lastBotMsg = document.querySelector('.bot-message:last-child code');
+  if (!lastBotMsg) {
+    showError("No SQL query found to export.");
+    return;
+  }
+
+  const sqlQuery = lastBotMsg.textContent;
+
+  const formData = new FormData();
+  formData.append("sql_query", sqlQuery);
+  formData.append("db_name", currentDatabase);
+  formData.append("format", format);
+
+  const response = await fetch(API + "/download/", {
+    method: "POST",
+    body: formData,
+    headers: { Authorization: "Bearer " + token },
+  });
+
+  if (!response.ok) {
+    showError("Failed to download file.");
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `query_result.${format}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  showSuccess(`Downloaded as ${format.toUpperCase()}`);
+}
+
 
 });
+
