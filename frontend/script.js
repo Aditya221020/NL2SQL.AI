@@ -477,7 +477,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.target.style.display = 'none';
         }
     });
-    
+    // Show landing page by default
+    showPage('landingPage');
     
     // --- Download Results (CSV, Excel, JSON) ---
  async function downloadResult(format) {
@@ -520,9 +521,9 @@ document.addEventListener('DOMContentLoaded', function() {
   a.remove();
   showSuccess(`Downloaded as ${format.toUpperCase()}`);
 }
-// Show landing page by default
-    showPage('landingPage');
+
 
 });
+
 
 
