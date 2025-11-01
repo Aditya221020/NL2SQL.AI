@@ -210,6 +210,13 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Download Options (hidden by default) -->
+                    <div id="downloadOptions" style="margin-top: 1rem; display: none; text-align:center;">
+                    <button class="btn btn-secondary" onclick="downloadResult('csv')">⬇️ Download CSV</button>
+                    <button class="btn btn-secondary" onclick="downloadResult('xlsx')">⬇️ Download Excel</button>
+                    <button class="btn btn-secondary" onclick="downloadResult('json')">⬇️ Download JSON</button>
+                    </div>
+
                     
                     <div class="chat-input-container">
                         <form id="chatForm" class="chat-form">
@@ -264,4 +271,5 @@
 
     <script src="/static/script.js"></script>
 </body>
+
 </html>
