@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+import pandas as pd
+import tempfile
 import shutil, os, sqlite3
 from dotenv import load_dotenv
 from . import mcp_server, models, auth
@@ -156,3 +158,61 @@ async def run_query(nl_query: str = Form(...), db_name: str = Form(...), usernam
         return {"sql": sql, "results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution failed: {str(e)}")
+
+@app.post("/download/")
+async def download_results(
+    nl_query: str = Form(...),
+    db_name: str = Form(...),
+    file_format: str = Form(...),
+    username: str = Depends(get_user)
+):
+    """
+    Run query and return downloadable file (CSV, Excel, JSON)
+    """
+    if not nl_query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
+    if not db_name.strip():
+        raise HTTPException(status_code=400, detail="Database name cannot be empty")
+
+    user_folder = os.path.join(DB_DIR, username)
+    db_path = os.path.join(user_folder, db_name)
+    if not os.path.exists(db_path):
+        raise HTTPException(status_code=404, detail="Database not found")
+
+    try:
+        # Generate SQL using Gemini (same as /query/)
+        sql = mcp_server.nl_to_sql(nl_query, db_name, username)
+        results = mcp_server.execute_sql(sql, db_name, username)
+
+        # Handle invalid/empty result
+        if not results or "error" in results[0]:
+            raise HTTPException(status_code=400, detail="Query failed or returned no data")
+
+        # Convert to DataFrame
+        df = pd.DataFrame(results)
+
+        # Create temporary file for download
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_format}")
+
+        if file_format == "csv":
+            df.to_csv(tmp.name, index=False)
+        elif file_format == "xlsx":
+            df.to_excel(tmp.name, index=False)
+        elif file_format == "json":
+            df.to_json(tmp.name, orient="records", indent=2)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file format")
+
+        tmp.close()
+
+        # Return file for download
+        return FileResponse(
+            tmp.name,
+            media_type="application/octet-stream",
+            filename=f"query_result.{file_format}",
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
+
+
