@@ -252,7 +252,7 @@ function openChat(databaseName, databaseType) {
     document.getElementById('currentDbName').textContent = databaseName;
     document.getElementById('currentDbType').textContent = databaseType;
     showPage('chatPage');
-    clearChatMessages();
+    
 }
 
 function goToDashboard() {
@@ -496,9 +496,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const sqlQuery = lastBotMsg.textContent;
 
   const formData = new FormData();
-  formData.append("sql_query", sqlQuery);
+  formData.append("nl_query", sqlQuery);   // ✅ match backend param
   formData.append("db_name", currentDatabase);
-  formData.append("format", format);
+  formData.append("file_format", format);  // ✅ match backend param
 
   const response = await fetch(API + "/download/", {
     method: "POST",
@@ -524,6 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 });
+
 
 
 
