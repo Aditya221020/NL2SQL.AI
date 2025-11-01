@@ -478,10 +478,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Show landing page by default
-    showPage('landingPage');
+    
     // --- Download Results (CSV, Excel, JSON) ---
-async function downloadResult(format) {
+ async function downloadResult(format) {
   if (!currentDatabase) {
     showError("Please select a database first.");
     return;
@@ -521,7 +520,9 @@ async function downloadResult(format) {
   a.remove();
   showSuccess(`Downloaded as ${format.toUpperCase()}`);
 }
-
+// Show landing page by default
+    showPage('landingPage');
 
 });
+
 
