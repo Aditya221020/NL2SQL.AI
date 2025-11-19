@@ -159,13 +159,7 @@ async def run_query(nl_query: str = Form(...), db_name: str = Form(...), usernam
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution failed: {str(e)}")
 
-@app.post("/download/")
-async def download_results(
-    nl_query: str = Form(...),
-    db_name: str = Form(...),
-    file_format: str = Form(...),
-    username: str = Depends(get_user)
-):
+
     """
     Run query and return downloadable file (CSV, Excel, JSON)
     """
@@ -214,5 +208,6 @@ async def download_results(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
+
 
 
