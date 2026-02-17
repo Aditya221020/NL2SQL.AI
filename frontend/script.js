@@ -1,7 +1,9 @@
 // Global variables
 // Pick API automatically: use local backend when running on localhost, otherwise use production URL.
 const DEFAULT_PROD_API = "https://nl2sql-ai.onrender.com";
-const locHost = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : null;
+const locHost = (typeof window !== 'undefined' && window.location && window.location.hostname)
+    ? window.location.hostname : null;
+
 const API = (locHost === 'localhost' || locHost === '127.0.0.1' || locHost === '' || locHost === null)
     ? "http://localhost:8000"
     : DEFAULT_PROD_API;
@@ -10,7 +12,7 @@ let token = null;
 let currentUser = null;
 let currentDatabase = null;
 
-// ✅ ADDED: Store chat history per database
+// ✅ Chat history per database
 let chatHistory = {};
 
 
@@ -53,7 +55,9 @@ function hideRegister() {
 
 // Authentication functions
 async function login(username, password) {
+
     try {
+
         const form = new FormData();
         form.append("username", username);
         form.append("password", password);
@@ -66,25 +70,36 @@ async function login(username, password) {
         const data = await response.json();
 
         if (data.access_token) {
+
             token = data.access_token;
             currentUser = username;
+
             hideModal('loginModal');
+
             showDashboard();
             loadDatabases();
+
             return true;
+
         } else {
+
             showError(data.error || "Login failed");
             return false;
+
         }
 
     } catch (error) {
+
         showError("Network error: " + error.message);
         return false;
+
     }
 }
 
 async function register(username, password) {
+
     try {
+
         const form = new FormData();
         form.append("username", username);
         form.append("password", password);
@@ -97,33 +112,47 @@ async function register(username, password) {
         const data = await response.json();
 
         if (response.status === 200 || response.status === 201) {
+
             showSuccess("Registration successful! Please login.");
+
             hideModal('registerModal');
             showLogin();
+
             return true;
+
         } else {
-            showError(data.detail || data.msg || "Registration failed");
+
+            showError(data.detail || "Registration failed");
             return false;
+
         }
 
     } catch (error) {
+
         showError("Network error: " + error.message);
         return false;
+
     }
 }
 
 function logout() {
+
     token = null;
     currentUser = null;
     currentDatabase = null;
+
     showPage('landingPage');
+
 }
 
 
 // Dashboard functions
 function showDashboard() {
+
     showPage('dashboardPage');
+
     document.getElementById('userName').textContent = currentUser;
+
 }
 
 async function loadDatabases() {
@@ -149,7 +178,7 @@ async function loadDatabases() {
 
     } catch (error) {
 
-        showError("Network error loading databases: " + error.message);
+        showError("Network error loading databases");
 
     }
 }
@@ -160,58 +189,37 @@ function displayDatabases(databases, containerId, type) {
 
     if (databases.length === 0) {
 
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">${type === 'uploaded' ? '📁' : '🗄️'}</div>
-                <p>No ${type} databases yet</p>
-            </div>
-        `;
+        container.innerHTML = `<p>No databases</p>`;
         return;
+
     }
 
     container.innerHTML = databases.map(db => `
+
         <div class="database-item"
-            onclick="openChat('${db.name}', '${type === 'uploaded' ? 'Uploaded' : 'Created'}')">
+            onclick="openChat('${db.name}', '${type}')">
 
-            <div class="database-info">
-                <div class="database-name">${db.name}</div>
-                <div class="database-meta">
-                    Size: ${formatFileSize(db.size)} |
-                    Modified: ${new Date(db.modified * 1000).toLocaleDateString()}
-                </div>
-            </div>
+            <div>${db.name}</div>
 
-            <div class="database-actions">
-                <button class="btn btn-small btn-primary"
-                    onclick="event.stopPropagation(); openChat('${db.name}', '${type === 'uploaded' ? 'Uploaded' : 'Created'}')">
-                    Chat
-                </button>
-            </div>
+            <button onclick="event.stopPropagation(); openChat('${db.name}', '${type}')">
+                Chat
+            </button>
 
         </div>
+
     `).join('');
 }
 
-function formatFileSize(bytes) {
 
-    if (bytes === 0) return '0 Bytes';
-
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-
-// Database actions
+// Chat open function (with chat restore)
 function openChat(databaseName, databaseType) {
 
-    // ✅ Save previous chat
+    // Save previous database chat
     if (currentDatabase) {
+
         chatHistory[currentDatabase] =
             document.getElementById('chatMessages').innerHTML;
+
     }
 
     currentDatabase = databaseName;
@@ -221,26 +229,33 @@ function openChat(databaseName, databaseType) {
 
     const container = document.getElementById('chatMessages');
 
-    // ✅ Restore chat if exists
+    // Restore chat if exists
     if (chatHistory[databaseName]) {
+
         container.innerHTML = chatHistory[databaseName];
+
     } else {
+
         clearChatMessages();
+
     }
 
     showPage('chatPage');
+
 }
+
 
 function goToDashboard() {
 
     if (currentDatabase) {
+
         chatHistory[currentDatabase] =
             document.getElementById('chatMessages').innerHTML;
+
     }
 
     showPage('dashboardPage');
 
-    currentDatabase = null;
 }
 
 
@@ -250,7 +265,7 @@ function clearChatMessages() {
     document.getElementById('chatMessages').innerHTML = `
         <div class="message bot-message">
             <div class="message-content">
-                <p>Hello! I'm your SQL assistant. Ask me anything about your database.</p>
+                Hello! I'm your SQL assistant.
             </div>
         </div>
     `;
@@ -258,34 +273,37 @@ function clearChatMessages() {
 
 function addMessage(content, isUser = false) {
 
-    const messagesContainer = document.getElementById('chatMessages');
+    const container = document.getElementById('chatMessages');
 
-    const messageDiv = document.createElement('div');
+    const div = document.createElement('div');
 
-    messageDiv.className =
-        `message ${isUser ? 'user-message' : 'bot-message'}`;
+    div.className = isUser
+        ? 'message user-message'
+        : 'message bot-message';
 
-    messageDiv.innerHTML =
+    div.innerHTML =
         `<div class="message-content">${content}</div>`;
 
-    messagesContainer.appendChild(messageDiv);
+    container.appendChild(div);
 
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    container.scrollTop = container.scrollHeight;
 
-    // ✅ Save chat per database
+    // Save chat history
     if (currentDatabase) {
-        chatHistory[currentDatabase] =
-            messagesContainer.innerHTML;
+
+        chatHistory[currentDatabase] = container.innerHTML;
+
     }
 }
 
 
-// sendMessage function unchanged (works perfectly)
 async function sendMessage(message) {
 
     if (!currentDatabase) {
+
         showError("No database selected");
         return;
+
     }
 
     addMessage(message, true);
@@ -295,9 +313,10 @@ async function sendMessage(message) {
     loadingDiv.className = 'message bot-message';
 
     loadingDiv.innerHTML =
-        `<div class="message-content证明">Processing...</div>`;
+        `<div class="message-content">Processing...</div>`;
 
-    document.getElementById('chatMessages').appendChild(loadingDiv);
+    document.getElementById('chatMessages')
+        .appendChild(loadingDiv);
 
     try {
 
@@ -309,8 +328,12 @@ async function sendMessage(message) {
         const response = await fetch(API + "/query/", {
 
             method: "POST",
+
             body: form,
-            headers: { Authorization: "Bearer " + token }
+
+            headers: {
+                Authorization: "Bearer " + token
+            }
 
         });
 
@@ -320,43 +343,12 @@ async function sendMessage(message) {
 
         if (response.ok) {
 
-            addMessage(`<strong>Generated SQL:</strong><br><code>${data.sql}</code>`);
-
-            if (data.results && data.results.length > 0) {
-
-                let html = "<strong>Results:</strong><br><table border='1'>";
-
-                html += "<tr>";
-
-                Object.keys(data.results[0]).forEach(col => {
-                    html += `<th>${col}</th>`;
-                });
-
-                html += "</tr>";
-
-                data.results.forEach(row => {
-
-                    html += "<tr>";
-
-                    Object.values(row).forEach(val => {
-                        html += `<td>${val}</td>`;
-                    });
-
-                    html += "</tr>";
-                });
-
-                html += "</table>";
-
-                addMessage(html);
-
-            } else {
-
-                addMessage("<em>No results found</em>");
-            }
+            addMessage(`<strong>SQL:</strong><br>${data.sql}`);
 
         } else {
 
             addMessage(`<strong>Error:</strong> ${data.detail}`);
+
         }
 
     } catch (error) {
@@ -364,5 +356,28 @@ async function sendMessage(message) {
         loadingDiv.remove();
 
         addMessage(`<strong>Error:</strong> ${error.message}`);
+
     }
 }
+
+
+// Utility
+function showError(msg) {
+
+    alert(msg);
+
+}
+
+function showSuccess(msg) {
+
+    alert(msg);
+
+}
+
+
+// Init
+document.addEventListener('DOMContentLoaded', function () {
+
+    showPage('landingPage');
+
+});
