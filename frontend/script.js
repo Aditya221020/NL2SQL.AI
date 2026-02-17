@@ -248,12 +248,19 @@ async function createDatabase(name) {
 }
 
 function openChat(databaseName, databaseType) {
+    // If switching database, clear chat
+    if (currentDatabase !== databaseName) {
+        clearChatMessages();
+    }
+
     currentDatabase = databaseName;
+
     document.getElementById('currentDbName').textContent = databaseName;
     document.getElementById('currentDbType').textContent = databaseType;
+
     showPage('chatPage');
-    
 }
+
 
 function goToDashboard() {
     showPage('dashboardPage');
@@ -482,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
 });
+
 
 
 
