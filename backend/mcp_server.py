@@ -15,7 +15,7 @@ if not gemini_api_key:
 genai.configure(api_key=gemini_api_key)
 
 # Initialize Gemini model
-model = genai.GenerativeModel('models/gemini-2.0-flash-exp')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def get_database_schema(db_name, username=None):
     """
@@ -167,6 +167,7 @@ def execute_sql(sql, db_name, username):
         return [{"error": str(e)}]
     finally:
         conn.close()
+
 
 
 
